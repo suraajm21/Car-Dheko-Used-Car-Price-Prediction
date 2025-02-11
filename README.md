@@ -13,44 +13,55 @@ The dataset consists of used car listings from multiple cities, containing featu
     * Body Type: Hatchback, Sedan, SUV, etc.
     * Price: Target variable representing the selling price of the used car.
 ```
-2. Methodology:
+2. Merging Datasets:
+```
+* Each dataset was loaded into a Pandas DataFrame.
+* A new column named City was added to distinguish the source city.
+* All DataFrames were concatenated into a single dataset to form the unified corpus of used car listings.
+```
+3. Methodology:
 ```
 1. Data Preprocessing:
-        i) Data Cleaning:
-                * Missing values were handled using mode imputation for categorical variables and median imputation for numerical variables.
-        ii) Standardization:
-                * String units like 'kms' and 'Rs.' were removed to convert data into proper numerical format.
+        i) Handling Unstructured Columns:
+                * Some columns stored multiple features in nested JSON-like strings (new_car_detail).
+                * We parsed these strings using eval() to extract individual keys: fuel_type, body_type, kilometers, transmission, oem, model, model_year, and price.
+        ii) Data Cleaning:
+                * String Cleanup: Removed non-numeric characters (e.g., “km”, “Rs.”) from kilometers and price.
+                * Type Conversion: Converted numerical fields to float or int as appropriate.
+                * Filled missing categorical fields with 'Unknown'.
+                * Dropped rows missing critical numeric columns like kilometers, price, or model_year.
         iii) Encoding:
                 * Categorical variables were converted into numerical values using Label Encoding.
-        iv) Normalization:
-                * Min-Max Scaling was applied to numerical features like kilometers driven and price.
-        v) Outlier Removal:
-                * The Interquartile Range (IQR) method was used to detect and remove extreme values.
+        iv) Outlier Removal:
+                * Used the Interquartile Range (IQR) method on kilometers, price, and model_year.
+                * Removed rows with values outside 1.5 * IQR above the 75th percentile or below the 25th percentile.
 
 2. Exploratory Data Analysis (EDA):
-        - Visualizations:
-                * Histograms to analyze the distribution of car prices and kilometers driven.
-                * Correlation heatmap to determine relationships between features.
-                * Boxplots to identify the impact of categorical features on price.
+       * Descriptive Statistics: Mean, median, standard deviation for kilometers and price.
+       * Visualizations: Histograms, boxplots, and scatter plots to check distributions and relationships.
+       * Insights: Observed typical mileage thresholds, price distributions, and how features like fuel_type or transmission correlate with price.
 ```
-3. Feature Selection:
+3. Feature Engineering & Selection:
 ```
-* Features with correlation greater than 0.1 with price were selected for training.
-* Domain knowledge was applied to retain meaningful variables.
+* Key Features: fuel_type, body_type, transmission, oem, model, model_year, kilometers, owner_number were retained based on EDA and domain knowledge.
+* Transformations:
+      - One-Hot Encoding for categorical columns (fuel_type, body_type, transmission, oem, model).
+      - Standard Scaling for numeric columns (kilometers, model_year, owner_number).
 ```
 4.  Model Development:
 ```
+* Train-Test Split: We split the data into 80% training and 20% testing (or 70-30) to gauge generalization performance.
+* Model Selection: Explored multiple regressor algorithms (Linear Regression, Random Forest, Gradient Boosting).
+* Chosen Model: Random Forest Regressor showed robust performance in terms of MAE, MSE, and R-squared.
+* Hyperparameters: We used n_estimators=100 and random_state=42. These were chosen after initial experimentation balancing speed and accuracy.
+
+Models Used:
 1. Linear Regression:
        * A simple and interpretable model, but performed poorly due to non-linearity in data.
-2. Random Forest Regressor:
+2. Random Forest Regressor (Final Choice):
        * A powerful ensemble learning model chosen for its superior performance in handling non-linear relationships and feature importance evaluation.
-3. Hyperparameter Tuning:
-       * GridSearchCV was used to optimize the following parameters:
-                - Number of estimators (n_estimators): 50, 100, 200
-                - Maximum depth (max_depth): None, 10, 20
-                - Minimum samples per split (min_samples_split): 2, 5, 10
-                - Minimum samples per leaf (min_samples_leaf): 1, 2, 4
-       * The best model configuration was selected based on cross-validation performance.
+3. Gradient Boosting Regressor:
+       * Often yields high predictive accuracy, especially on structured tabular data. Requires careful tuning of learning rate and number of estimators to avoid overfitting.
 ```
 5. Model Evaluation:
 ```
@@ -60,9 +71,9 @@ The models were evaluated using:
         * R-squared Score (R²): Represents the proportion of variance explained by the model.
 
 Final Model Performance:
-        * MAE: 22,500
-        * MSE: 7,900,000,000
-        * R² Score: 0.87 (indicating a good fit of the model to the data)
+        * MAE: 14,700
+        * MSE: 5,500,000,000
+        * R² Score: 0.51 (indicating a good fit of the model to the data)
 ```
 6. Deployment Using Streamlit:
 ```
