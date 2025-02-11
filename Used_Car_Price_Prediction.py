@@ -196,7 +196,7 @@ def deploy_app():
         # Final input
         X_final = pd.concat([X_cat, X_num], axis=1)
 
-        # Reindex columns to match training order
+        # Reindexing columns to match training order
         X_final = X_final.reindex(columns=feature_names, fill_value=0)
 
         # Predicting
