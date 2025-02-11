@@ -35,8 +35,8 @@ The dataset consists of used car listings from multiple cities, containing featu
 ```
 3. Feature Selection:
 ```
-       * Features with correlation greater than 0.1 with price were selected for training.
-       * Domain knowledge was applied to retain meaningful variables.
+* Features with correlation greater than 0.1 with price were selected for training.
+* Domain knowledge was applied to retain meaningful variables.
 ```
 4.  Model Development:
 ```
@@ -77,15 +77,15 @@ A Streamlit web application was developed to enable real-time user interaction:
 ```
 7. Results & Conclusion:
 ```
-        * The Random Forest Regressor outperformed other models in terms of accuracy and robustness.
-        * The Streamlit application provides a seamless experience for users to estimate used car prices based on historical data.
-        * The project successfully demonstrates the end-to-end process of data cleaning, feature selection, model development, hyperparameter tuning, and deployment.
+* The Random Forest Regressor outperformed other models in terms of accuracy and robustness.
+* The Streamlit application provides a seamless experience for users to estimate used car prices based on historical data.
+* The project successfully demonstrates the end-to-end process of data cleaning, feature selection, model development, hyperparameter tuning, and deployment.
 ```
 8. Future Enhancements:
 ```
-        * Integration of location-based pricing to capture market trends.
-        * Deployment on cloud platforms for broader accessibility.
-        * Incorporation of advanced models like XGBoost or Neural Networks for further improvements in accuracy.
+* Integration of location-based pricing to capture market trends.
+* Deployment on cloud platforms for broader accessibility.
+* Incorporation of advanced models like XGBoost or Neural Networks for further improvements in accuracy.
 ```
 
 
