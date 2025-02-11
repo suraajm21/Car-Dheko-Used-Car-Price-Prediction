@@ -23,7 +23,7 @@ def load_data():
     dfs = []
     for city, path in file_paths.items():
         df = pd.read_excel(path)
-        df["City"] = city  # Add city column
+        df["City"] = city  # Adding city column
         dfs.append(df)
 
     merged_df = pd.concat(dfs, ignore_index=True)
@@ -31,14 +31,9 @@ def load_data():
 
 # Step 2: Data Preprocessing
 def preprocess_data(df):
-    """
-    Convert nested 'new_car_detail' into columns, fix data types,
-    handle missing values, remove outliers, etc.
-    """
-    # Example code: make sure these columns exist in your dataset
     def extract_features(row, key):
         try:
-            data = eval(row)  # Convert string representation of dictionary to dictionary
+            data = eval(row)  # Converting string representation of dictionary to dictionary
             return data.get(key, None)
         except:
             return None
@@ -53,15 +48,15 @@ def preprocess_data(df):
     df['model_year'] = df['new_car_detail'].apply(lambda x: extract_features(x, 'modelYear'))
     df['price'] = df['new_car_detail'].apply(lambda x: extract_features(x, 'price'))
 
-    # Clean up strings
+    # Cleaning up strings
     df['kilometers'] = df['kilometers'].astype(str).str.replace(r'[^\d]', '', regex=True).astype(float)
     df['price'] = df['price'].astype(str).str.replace(r'[^\d]', '', regex=True).astype(float)
 
-    # Drop unneeded columns
+    # Dropping unneeded columns
     df.drop(columns=['new_car_detail','new_car_overview','new_car_feature','new_car_specs','car_links'],
             errors='ignore', inplace=True)
 
-    # Handle missing values
+    # Handling missing values
     df.fillna({
         'fuel_type': 'Unknown',
         'body_type': 'Unknown',
@@ -70,10 +65,10 @@ def preprocess_data(df):
         'model': 'Unknown'
     }, inplace=True)
 
-    # Drop rows if these crucial columns are missing
+    # Dropping rows if these crucial columns are missing
     df.dropna(subset=['kilometers', 'price', 'model_year'], inplace=True)
 
-    # Remove outliers only on real numeric columns:
+    # Removing outliers only on real numeric columns:
     numeric_cols = ['kilometers','price','model_year']
     Q1 = df[numeric_cols].quantile(0.25)
     Q3 = df[numeric_cols].quantile(0.75)
@@ -85,34 +80,33 @@ def preprocess_data(df):
     ).any(axis=1)
     df = df[filter_].copy()
 
-    # Return cleaned dataframe (no final encoding or scaling yet)
+    # Returning cleaned dataframe (no final encoding or scaling yet)
     return df
 
 # Step 3: Train-Test Split and Encoding/Scaling
 def split_and_transform(df):
-    # Pick your features (raw, unencoded)
     features = ['fuel_type','body_type','transmission','oem','model','model_year','kilometers','owner_number']
     target = 'price'
 
     X = df[features].copy()
     y = df[target].copy()
 
-    # Convert all string columns to categories via OneHotEncoder
+    # Converting all string columns to categories via OneHotEncoder
     cat_cols = ['fuel_type','body_type','transmission','oem','model']
     num_cols = ['model_year','kilometers','owner_number']
 
-    # One-Hot encode the categorical columns
+    # One-Hot encoding the categorical columns
     ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
     X_cat = ohe.fit_transform(X[cat_cols])
     cat_names = ohe.get_feature_names_out(cat_cols)
     X_cat = pd.DataFrame(X_cat, columns=cat_names, index=X.index)
 
-    # Scale numeric columns
+    # Scaling numeric columns
     scaler = StandardScaler()
     X_num = scaler.fit_transform(X[num_cols])
     X_num = pd.DataFrame(X_num, columns=num_cols, index=X.index)
 
-    # Merge back
+    # Merging back
     X_final = pd.concat([X_cat, X_num], axis=1)
 
     # Train-test split
@@ -135,7 +129,7 @@ def train_model(X_train, X_test, y_train, y_test):
 
     return model
 
-# Step 5: Save Artifacts
+# Step 5: Saveing Artifacts
 def save_artifacts(model, ohe, scaler, cat_names, num_cols):
     with open("car_price_model.pkl", "wb") as file:
         pickle.dump(model, file)
@@ -154,7 +148,7 @@ def save_artifacts(model, ohe, scaler, cat_names, num_cols):
 # Step 6: Streamlit Deployment
 def deploy_app():
     st.title("Used Car Price Prediction")
-    # Check for all required files
+    # Checking for all required files
     required_files = ["car_price_model.pkl", "encoder.pkl", "scaler.pkl", "feature_names.pkl"]
     if not all(os.path.exists(f) for f in required_files):
         st.error("Model files are missing. Retrain and save the model before deploying.")
@@ -165,7 +159,7 @@ def deploy_app():
     scaler = pickle.load(open("scaler.pkl","rb"))
     feature_names = pickle.load(open("feature_names.pkl","rb"))
 
-    # Build the form
+    # Building the form
     fuel_type = st.selectbox("Fuel Type", ["Petrol","Diesel","CNG","LPG","Electric","Unknown"])
     body_type = st.selectbox("Body Type", ["Hatchback","Sedan","SUV","Unknown"])
     transmission = st.selectbox("Transmission", ["Manual","Automatic","Unknown"])
@@ -176,7 +170,7 @@ def deploy_app():
     owner_number = st.slider("Number of Owners", 1, 5, 1)
 
     if st.button("Predict Price"):
-        # Construct a single-row dataframe with raw inputs
+        # Constructing a single-row dataframe with raw inputs
         input_dict = {
             'fuel_type': [fuel_type],
             'body_type': [body_type],
@@ -189,7 +183,7 @@ def deploy_app():
         }
         input_df = pd.DataFrame(input_dict)
 
-        # Split columns into cat vs numeric, in the same way as training
+        # Splitting columns into cat vs numeric, in the same way as training
         cat_cols = ['fuel_type','body_type','transmission','oem','model']
         num_cols = ['model_year','kilometers','owner_number']
 
@@ -205,7 +199,7 @@ def deploy_app():
         # Reindex columns to match training order
         X_final = X_final.reindex(columns=feature_names, fill_value=0)
 
-        # Predict
+        # Predicting
         pred = model.predict(X_final)
         st.success(f"Estimated Price: {pred[0]:,.2f} INR")
 
